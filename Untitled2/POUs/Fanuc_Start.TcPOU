@@ -53,7 +53,6 @@ VAR
 	xuqing: BOOL;
 	xuqingniubi : BOOL;
 	
-
 END_VAR
 ]]></Declaration>
     <Implementation>
