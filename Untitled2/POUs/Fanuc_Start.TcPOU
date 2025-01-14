@@ -50,7 +50,9 @@ VAR
 	Temp_IF_Buffer	:BOOL;
 	coco_text : BOOL;
 	coco_test1 :BOOL;
-	xuqing: bool;
+	xuqing: BOOL;
+	xuqingniubi : BOOL;
+	
 
 END_VAR
 ]]></Declaration>
