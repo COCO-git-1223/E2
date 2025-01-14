@@ -38,6 +38,7 @@ VAR_GLOBAL
 	DO_Door_ES AT%Q*:BOOL;
 	DO_SafeEnble AT%Q*:BOOL;
 	DO_conveyor AT%Q*:BOOL;
+	//sssssssss
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>
