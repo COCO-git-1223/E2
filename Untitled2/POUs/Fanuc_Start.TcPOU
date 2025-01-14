@@ -49,6 +49,7 @@ VAR
 	Static_P_Trig :R_TRIG;
 	Temp_IF_Buffer	:BOOL;
 	coco_text : BOOL;
+	coco_test1 :bool;
 
 END_VAR
 ]]></Declaration>
