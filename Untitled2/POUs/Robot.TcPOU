@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Robot" Id="{8be10a56-5d44-4695-9ce8-45cdbb044705}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Robot
+VAR
+	
+	
+	Robot_start :Fanuc_Start;
+	Robot_TCP :Modbus_TCP;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//上位机控制信号
+System.start :=ModbusData.strat =1;
+System.stop :=ModbusData.stop =1;
+System.reset :=ModbusData.reset =1;
+System.pause :=ModbusData.pause =1;
+System.restart :=ModbusData.strat_from_pause =1;
+
+//机械手控制块_R1
+Robot_start(
+	TEST:= , 
+	Enabled:= RobotDataIn.Enabled, 
+	SYS_RDY:= RobotDataIn.System_Ready, 
+	PROG_Run:= RobotDataIn.Prg_Running, 
+	Pouse:= RobotDataIn.Prg_Paused, 
+	Held:= RobotDataIn.Motion_Held, 
+	Fault:= RobotDataIn.Fault, 
+	At_Perch:= RobotDataIn.Home, 
+	TP_Enable:= RobotDataIn.TP_Enabled, 
+	Batt_Alarm:= RobotDataIn.BATalarm, 
+	Busy:= RobotDataIn.Busy, 
+	PNS_Ack:= RobotDataIn.PNS_ACK1, 
+	Collision_Alarm:= RobotDataIn.Collision, 
+	Auto_on:= RobotDataIn.AutoOn, 
+	CMD_PROD_Start:= System.start, 
+	CMD_Restart:= System.restart, 
+	CMD_Stop:= System.stop, 
+	CMD_Hold:= System.pause, 
+	VIRTUAL_LIGHT_CURTAINS:= 1, 
+	CMD_Estop:= 1, 
+	CMD_JOB_Number:= 1, 
+	CMD_System_Reset:= System.reset, 
+	IMSTP=> RobotDataOut.No_Estop, 
+	Hold=> RobotDataOut.No_Hold, 
+	SFSPD=> RobotDataOut.SFSPD, 
+	CSTOPI=> RobotDataOut.Cycle_Stop, 
+	Restart=> RobotDataOut.Robot_Fault_Reset, 
+	Start=> RobotDataOut.Recovery_Cycle_Start, 
+	Home=> RobotDataOut.Home_OUT, 
+	Enable=> RobotDataOut.Motion_Enable, 
+	RSR_PNS=> RobotDataOut.PNS_send, 
+	PNS_Strobe=> RobotDataOut.PNS_Strobe, 
+	PROD_Start=> RobotDataOut.Prod_start);
+	
+//ModbusTCP读写机械数据_R1
+Robot_TCP();
+	
+//R1状态反馈给上位机
+IF RobotDataIn.AutoOn THEN
+	ModbusData.R1_robotauto :=1;
+ELSE
+	ModbusData.R1_robotauto :=0;
+END_IF
+
+IF RobotDataIn.Enabled THEN
+	ModbusData.R1_enable :=1;
+ELSE
+	ModbusData.R1_enable :=0;
+END_IF
+
+IF RobotDataIn.Prg_Running THEN
+	ModbusData.R1_cyclic :=1;
+ELSE
+	ModbusData.R1_cyclic :=0;
+END_IF
+
+IF RobotDataIn.Prg_Paused THEN
+	ModbusData.R1_pause :=1;
+ELSE
+	ModbusData.R1_pause :=0;
+END_IF
+
+IF RobotDataIn.Estop THEN
+	ModbusData.R1_EStop :=1;
+ELSE
+	ModbusData.R1_EStop :=0;
+END_IF
+
+IF RobotDataIn.Fault THEN
+	ModbusData.R1_Fault :=1;
+ELSE
+	ModbusData.R1_Fault :=0;
+END_IF
+
+IF RobotDataIn.Collision THEN
+	ModbusData.R1_crashwarning :=1;
+ELSE
+	ModbusData.R1_crashwarning :=0;
+END_IF
+
+IF RobotDataIn.System_Ready THEN
+	ModbusData.R1_normal :=1;
+ELSE
+	ModbusData.R1_normal :=0;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="Robot">
+      <LineId Id="79" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="36" Count="2" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="133" Count="34" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="168" Count="1" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="170" Count="2" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="179" Count="3" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="183" Count="3" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="188" Count="3" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="193" Count="3" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="202" Count="4" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="208" Count="4" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="214" Count="4" />
+      <LineId Id="213" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

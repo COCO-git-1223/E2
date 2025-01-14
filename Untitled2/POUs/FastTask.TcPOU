@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FastTask" Id="{a3814671-4128-4b84-9697-77ea7cca3d32}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM FastTask
+VAR
+	_iBuffer: UDINT := 0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR _iBuffer := 0 TO MAX_CSV_RING_BUFFER BY 1 DO
+	IF gCSV_Buffer[_iBuffer].bFull THEN
+		gCSV_Buffer[_iBuffer].fbWriter(bWrite:= gCSV_Buffer[_iBuffer].bFull,sFileName:=gCSV_Buffer[_iBuffer].sPath, pBuffer :=ADR(gCSV_Buffer[_iBuffer].aBuffer));
+		gCSV_Buffer[_iBuffer].bFull := gCSV_Buffer[_iBuffer].fbWriter.bBusy;
+	END_IF
+END_FOR]]></ST>
+    </Implementation>
+    <LineIds Name="FastTask">
+      <LineId Id="7" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

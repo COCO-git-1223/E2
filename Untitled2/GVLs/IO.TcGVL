@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="IO" Id="{1edc3af6-1e6d-4ede-9f8e-30d2e541ba69}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	// 8  I1.0
+	DI_Touch1 AT%I*:BOOL;
+	DI_Touch2 AT%I*:BOOL;
+	DI_AGV_EStop1 AT%I*:BOOL;
+	DI_AGV_EStop2 AT%I*:BOOL;
+	DI_Drum1 AT%I*:BOOL;
+	DI_Drop1 AT%I*:BOOL;
+	DI_Drop2 AT%I*:BOOL;
+	DI_Drop3 AT%I*:BOOL;
+	DI_Drop4 AT%I*:BOOL;
+	DI_Drop5 AT%I*:BOOL;
+	DI_RobotFault AT%I*:BOOL;
+	DI_Reset_Button AT%I*:BOOL;
+	DI_Reset_Box AT%I*:BOOL;
+	DI_EStop AT%I*:BOOL;
+	
+	DI_SAFEoutput AT%I*:BOOL;
+	DI_Btn_ES AT%I*:BOOL;
+	DI_Door_ES AT%I*:BOOL;
+	DI_Crawl AT%I*:BOOL;
+	DI_SafeCrawl AT%I*:BOOL;
+	DI_DoorStatus AT%I*:BOOL;
+	DI_EStopStatus AT%I*:BOOL;
+	// 8 Q1.0
+	DO_DrumallStop AT%Q*:BOOL;
+	DO_Light AT%Q*:BOOL;
+	DO_wheelBreak AT%Q*:BOOL;
+	DO_AGVstop AT%Q*:BOOL;
+	DO_RobotEstop AT%Q*:BOOL;
+	DO_RobotFault AT%Q*:BOOL;
+	DO_RUNStatus AT%Q*:INT;
+	DO_Btn_ES AT%Q*:BOOL;
+	DO_Door_ES AT%Q*:BOOL;
+	DO_SafeEnble AT%Q*:BOOL;
+	DO_conveyor AT%Q*:BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

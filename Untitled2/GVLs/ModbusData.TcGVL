@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="ModbusData" Id="{c22437dc-5bcc-4c90-9061-952587c980ae}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	R1_robotauto AT%MW1:WORD;
+	R1_enable AT%MW2:WORD;
+	R1_cyclic	AT%MW3:WORD;
+	R1_pause AT%MW4:WORD;
+	R1_EStop AT%MW5:WORD;
+	R1_Fault AT%MW6:WORD;
+	R1_crashwarning	AT%MW7:WORD;
+	R1_normal AT%MW8:WORD;
+	R1_Drop1 AT%MW9:WORD;
+	R1_Drop2 AT%MW10:WORD;
+	R1_Drop3 AT%MW11:WORD;
+	R1_Drop4 AT%MW12:WORD;
+	R1_Drop5 AT%MW13:WORD;
+	Estop_status AT%MW50:WORD;
+	strat AT%MW100:WORD;
+	strat_from_pause AT%MW101:WORD;
+	stop AT%MW102:WORD;
+	reset AT%MW103:WORD;
+	pause AT%MW104:WORD;
+	system_estop_reset AT%MW105:WORD;
+	Whellbreak AT%MW150:WORD;
+	Light AT%MW151:WORD;
+	Drum AT%MW152:WORD;
+	Mode AT%MW157:WORD:=1;
+	Estop AT%MW158:WORD;
+	RUN_Status AT%MW159:INT;
+	Safe_enble AT%MW160:WORD:=0;
+	Running AT%MW161:INT;
+	Crawl AT%MW162:WORD;
+	Safe_Estop AT%MW163:WORD;
+	Charge AT%MW164:WORD;
+	Swtich_Estop AT%MW165:WORD:=1;
+	Touch_Estop AT%MW166:WORD;
+	Swtich_Enble AT%MW167:WORD;
+	Crawl_EStop AT%MW168:WORD;
+	Crawl_Door AT%MW169:WORD;
+	
+	Distance AT%MW200:INT;
+	Extend AT%MW201:WORD;
+	retraction AT%MW202:WORD;
+	conveyor_Estop AT%MW203:WORD;
+	conveyor_heart AT%MW204:WORD;
+	Car_moving AT%MW210:INT;  //车移动中，1为前进
+	Car_ESTOP AT%MW211:INT;  //告知皮带机异常
+	Connected_Conveyor AT%MW175:WORD;    //是否连接皮带机，1为连接，0为断开
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

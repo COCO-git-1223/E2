@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="Dataregs" Id="{e8b690a3-5284-4e67-8724-9bc0adcceea6}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	robot_IN1 :ARRAY[1..4] OF WORD;
+	robot_OUT1 :ARRAY[1..4] OF WORD;
+	robot_IN2 :ARRAY[0..7] OF WORD;
+	robot_OUT2 :ARRAY[0..7] OF WORD;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

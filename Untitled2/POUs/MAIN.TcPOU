@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{3ce512e1-afba-4aff-aa4d-3a73363edac0}" SpecialFunc="None">
+    <Declaration><![CDATA[ PROGRAM MAIN
+VAR
+	ERR_ACK_S AT%Q*:BOOL;
+	RUN_S AT%Q*:BOOL;
+	Restart AT%Q* :BOOL;
+	COM_ERR_S AT%I*:BOOL;
+	FB_ERR_S AT%I*:BOOL;
+	OTHER_ERR_S AT%I* :BOOL;
+	COM_ERR AT%I*:BOOL;
+	FB_ERR AT%I*:BOOL;
+	OTHER_ERR AT%I* :BOOL;
+	text : Modbus_TCP;
+
+	R_TRIG2 :R_TRIG;
+	R_TRIG3 :R_TRIG;
+	Robot_Fault:R_TRIG;
+	
+	
+	nTaskIdx: DINT;
+END_VAR
+VAR_OUTPUT
+	Reset :R_TRIG;
+	Heart_err1:Tc2_Standard.TON;
+	Heart_err2:Tc2_Standard.TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[nTaskIdx := GETCURTASKINDEXEX();
+Reset(CLK:=WORD_TO_BOOL(ModbusData.system_estop_reset), Q=> );
+R_TRIG2(CLK:= COM_err_S, Q=> );
+R_TRIG3(CLK:= Err_Ack_S, Q=> );
+Restart:=IO.DI_Reset_Button OR Reset.Q OR _TaskInfo[nTaskIdx].FirstCycle;
+Robot_Fault(CLK:= RobotDataIn.Fault,Q=> , );
+
+Heart_err1(IN:= ModbusData.conveyor_heart=0 , PT:= T#5S, Q=> , ET=> );
+Heart_err2(IN:= ModbusData.conveyor_heart=1 , PT:= T#5S, Q=> , ET=> );
+
+IF NOT RUN_S AND NOT OTHER_ERR_S AND NOT OTHER_ERR AND (NOT COM_ERR_S AND NOT COM_ERR) THEN
+	RUN_S :=TRUE;
+	ERR_ACK_S :=0;
+ELSIF OTHER_ERR_S OR COM_ERR_S OR OTHER_ERR OR COM_ERR THEN
+	RUN_S :=FALSE;
+	ERR_ACK_S :=1;	
+END_IF
+
+IF Robot_Fault.Q  THEN
+	IO.DO_RobotFault :=TRUE;
+END_IF
+IF Restart THEN
+	IO.DO_RobotFault :=FALSE;
+	ModbusData.conveyor_Estop :=0;
+END_IF
+
+//皮带机
+ModbusData.Car_ESTOP:= BOOL_TO_INT(NOT IO.DI_SAFEoutput);
+IF (Heart_err1.Q OR Heart_err2.Q) AND ModbusData.Connected_Conveyor=1 THEN 
+	ModbusData.conveyor_Estop :=1;
+END_IF
+IF ModbusData.conveyor_Estop =1 THEN
+	IO.DO_conveyor :=1;
+ELSE 
+	IO.DO_conveyor :=0;
+END_IF
+//Contact_edge();
+//max
+io.DO_wheelBreak := WORD_TO_BOOL(ModbusData.Whellbreak);
+IO.DO_Light := WORD_TO_BOOL(ModbusData.Light);
+IO.DO_DrumallStop := IO.DO_RobotEstop;
+IO.DO_RUNStatus :=ModbusData.Running;
+IO.DO_SafeEnble := WORD_TO_BOOL(ModbusData.Safe_enble);
+
+ModbusData.R1_Drop1 :=BOOL_TO_WORD(IO.DI_Drop1);
+ModbusData.R1_Drop2 :=BOOL_TO_WORD(IO.DI_Drop2);
+ModbusData.R1_Drop3 :=BOOL_TO_WORD(IO.DI_Drop3);
+ModbusData.R1_Drop4 :=BOOL_TO_WORD(IO.DI_Drop4);
+ModbusData.R1_Drop5 :=BOOL_TO_WORD(IO.DI_Drop5);
+ModbusData.Drum :=BOOL_TO_WORD(IO.DI_Drum1);
+ModbusData.Estop :=BOOL_TO_WORD(IO.DI_AGV_EStop1) AND BOOL_TO_WORD(IO.DI_AGV_EStop2) AND BOOL_TO_WORD(IO.DI_EStop);//
+ModbusData.Crawl :=BOOL_TO_WORD(IO.DI_Crawl);
+ModbusData.Safe_Estop :=BOOL_TO_WORD(IO.DI_SafeCrawl);
+ModbusData.Crawl_Door :=BOOL_TO_WORD(IO.DI_DoorStatus);
+ModbusData.Crawl_EStop :=BOOL_TO_WORD(IO.DI_EStopStatus);
+ModbusData.Touch_Estop :=BOOL_TO_WORD(IO.DI_Touch1 AND IO.DI_Touch2);
+ModbusData.Car_moving :=ModbusData.RUN_Status;
+//急停状态
+ModbusData.Estop_status.0:= RobotDataIn.Estop;
+ModbusData.Estop_status.1:= WORD_TO_BOOL(ModbusData.Mode);
+ModbusData.Estop_status.2:= IO.DI_AGV_EStop1 AND IO.DI_AGV_EStop2 AND IO.DI_EStop;
+ModbusData.Estop_status.3:= IO.DO_SafeEnble;
+ModbusData.Estop_status.4:= IO.DI_Crawl;
+ModbusData.Estop_status.5:= IO.DI_SafeCrawl;
+ModbusData.Estop_status.6:= WORD_TO_BOOL(ModbusData.Swtich_Estop);
+ModbusData.Estop_status.7:= IO.DI_Touch1 AND IO.DI_Touch2;
+//ModbusData.Estop_status.8:= 
+ModbusData.Estop_status.9:= IO.DI_EStopStatus;
+ModbusData.Estop_status.10:= IO.DI_DoorStatus;
+
+IO.DO_Btn_ES :=IO.DI_Btn_ES;
+IO.DO_Door_ES :=IO.DI_Door_ES;
+Robot();
+text();]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="810" Count="0" />
+      <LineId Id="62" Count="2" />
+      <LineId Id="814" Count="0" />
+      <LineId Id="751" Count="0" />
+      <LineId Id="960" Count="0" />
+      <LineId Id="962" Count="0" />
+      <LineId Id="961" Count="0" />
+      <LineId Id="734" Count="0" />
+      <LineId Id="931" Count="5" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="876" Count="0" />
+      <LineId Id="878" Count="4" />
+      <LineId Id="975" Count="0" />
+      <LineId Id="877" Count="0" />
+      <LineId Id="965" Count="9" />
+      <LineId Id="795" Count="0" />
+      <LineId Id="767" Count="4" />
+      <LineId Id="883" Count="0" />
+      <LineId Id="1002" Count="0" />
+      <LineId Id="778" Count="0" />
+      <LineId Id="776" Count="0" />
+      <LineId Id="779" Count="1" />
+      <LineId Id="833" Count="2" />
+      <LineId Id="854" Count="0" />
+      <LineId Id="906" Count="0" />
+      <LineId Id="905" Count="0" />
+      <LineId Id="904" Count="0" />
+      <LineId Id="773" Count="0" />
+      <LineId Id="907" Count="0" />
+      <LineId Id="976" Count="0" />
+      <LineId Id="1033" Count="0" />
+      <LineId Id="1031" Count="1" />
+      <LineId Id="1034" Count="5" />
+      <LineId Id="1043" Count="0" />
+      <LineId Id="1040" Count="1" />
+      <LineId Id="1004" Count="0" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="1005" Count="0" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="358" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

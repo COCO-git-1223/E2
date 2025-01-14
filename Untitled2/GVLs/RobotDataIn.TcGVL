@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="RobotDataIn" Id="{8b4193ba-dcef-4fab-a1ba-8e4ee70404fb}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//R1_IN
+	Motion_Held :BOOL;
+	Home :BOOL;
+	TP_Enabled :BOOL;
+	BATalarm :BOOL;
+	Busy :BOOL;
+	AutoOn :BOOL;
+	Enabled :BOOL;
+	Prg_Running :BOOL;
+	Prg_Paused :BOOL;
+	Estop :BOOL;
+	Fault :BOOL;
+	Collision :BOOL;
+	System_Ready :BOOL;
+	StyleNumberAckStrobe :BOOL;
+	PNS_ACK1 :BYTE;
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="RobotDataOut" Id="{62084b3d-f537-42fe-85f3-4b2d1c3d23ec}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//R1_out
+	PNS_send :BYTE;
+	No_Estop :BOOL;
+	No_Hold :BOOL;
+	SFSPD :BOOL;
+	Cycle_Stop :BOOL;
+	Robot_Fault_Reset :BOOL;
+	Recovery_Cycle_Start :BOOL;
+	Home_OUT :BOOL;
+	Motion_Enable :BOOL;
+	PNS_Strobe :BOOL;
+	Prod_start :BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

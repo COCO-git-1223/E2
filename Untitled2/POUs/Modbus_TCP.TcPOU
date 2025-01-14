@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Modbus_TCP" Id="{bc8d29f3-3b70-4d53-9beb-336e35b64fa3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Modbus_TCP
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	robot_R1 :FB_MBReadInputRegs;
+	robot_W1 :FB_MBWriteRegs;
+	robot_R2 :FB_MBReadRegs;
+	robot_W2 :FB_MBWriteRegs;
+	
+	brobot_R1 :BOOL;
+	brobot_W1 :BOOL;
+	
+	rbusy :BOOL;
+	rErr :BOOL;
+	rErrid :UDINT;
+	cbread :UDINT;
+	
+	wbusy :BOOL;
+	wErr :BOOL;
+	wErrID :UDINT;
+	
+	step :INT:=0;
+	
+	nErrID :UDINT;
+	nstep :INT;
+	
+	tonR :TON;
+	tonW :TON;
+	Hbyte:BYTE;
+	Lbyte:BYTE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[tonR(IN:= brobot_R1, PT:= T#20MS, Q=> , ET=> );
+tonW(IN:= brobot_W1, PT:= T#30MS, Q=> , ET=> );
+CASE step OF
+	0:
+		brobot_R1 :=FALSE;
+		brobot_W1 :=FALSE;
+		rErr :=FALSE;
+		wErr :=FALSE;
+		rErrid :=0;
+		wErrid :=0;
+		step :=10;
+		robot_R1(bExecute:=FALSE,);
+		robot_W1(bExecute:=FALSE,);
+	10:
+		brobot_R1 :=TRUE;
+	IF tonR.Q THEN
+		robot_R1(
+			sIPAddr:= '192.168.4.101', 
+			nTCPPort:= 502, 
+			nUnitID:= 1, 
+			nQuantity:= 4, 
+			nMBAddr:= 0, 
+			//cbLength:= SIZEOF(Dataregs.robot_IN1),
+			cbLength:= 8, 
+			pDestAddr:= ADR(Dataregs.robot_IN1), 
+			bExecute:= brobot_R1, 
+			tTimeout:= T#1S, 
+			bBusy=> rbusy, 
+			bError=> rErr, 
+			nErrId=> rErrid, 
+			cbRead=> cbread);
+		//读取后配值	
+		IF NOT rErr AND rErrid=0 THEN
+			RobotDataIn.AutoOn :=Dataregs.robot_IN1[1].0;
+			RobotDataIn.Enabled :=Dataregs.robot_IN1[1].1;
+			RobotDataIn.Prg_Running :=Dataregs.robot_IN1[1].2;
+			RobotDataIn.Prg_Paused :=Dataregs.robot_IN1[1].3;
+			RobotDataIn.Estop :=Dataregs.robot_IN1[1].4;
+			RobotDataIn.Fault :=Dataregs.robot_IN1[1].5;
+			RobotDataIn.Collision :=Dataregs.robot_IN1[1].6;
+			RobotDataIn.System_Ready :=Dataregs.robot_IN1[1].7;
+			RobotDataIn.Motion_Held :=Dataregs.robot_IN1[1].8;
+			RobotDataIn.Home :=Dataregs.robot_IN1[1].9;
+			RobotDataIn.TP_Enabled :=Dataregs.robot_IN1[1].10;
+			RobotDataIn.BATalarm :=Dataregs.robot_IN1[1].11;
+			RobotDataIn.Busy :=Dataregs.robot_IN1[1].12;
+			RobotDataIn.PNS_ACK1 :=WORD_TO_BYTE(Dataregs.robot_IN1[2]);
+			step :=20;
+			END_IF
+			
+			//robot_R1(bExecute:=FALSE,);
+			IF rErr THEN
+				nErrID :=rErrid;
+				//nstep :=step;
+				step :=0;
+			END_IF
+		
+	END_IF
+	20:
+	
+		//写入前配值
+		Hbyte:=RobotDataOut.PNS_send;
+		Lbyte.0:=RobotDataOut.No_Estop;
+		Lbyte.1:=RobotDataOut.No_Hold;
+		Lbyte.2:=RobotDataOut.SFSPD;
+		Lbyte.3:=RobotDataOut.Cycle_Stop;
+		Lbyte.4:=RobotDataOut.Robot_Fault_Reset;
+		Lbyte.5:=RobotDataOut.Recovery_Cycle_Start;
+		Lbyte.6:=RobotDataOut.Home_OUT;
+		Lbyte.7:=RobotDataOut.Motion_Enable;
+		Dataregs.robot_OUT1[1] :=Hbyte*256+Lbyte;
+		Dataregs.robot_OUT1[2].0 :=  RobotDataOut.PNS_Strobe;         
+		Dataregs.robot_OUT1[2].1 :=  RobotDataOut.Prod_start;
+		brobot_W1 :=TRUE;
+	IF tonW.Q THEN
+		robot_W1(
+			sIPAddr:= '192.168.4.101', 
+			nTCPPort:= 502, 
+			nUnitID:= 1, 
+			nQuantity:= 4, 
+			nMBAddr:= 0, 
+			//cbLength:= SIZEOF(Dataregs.robot_OUT1), 
+			cbLength:= 8, 
+			pSrcAddr:= ADR(Dataregs.robot_OUT1), 
+			bExecute:= brobot_W1, 
+			tTimeout:= T#1S, 
+			bBusy=> wbusy, 
+			bError=> wErr, 
+			nErrId=> wErrID);
+			step :=0;
+			//robot_W1(bExecute:=FALSE,);
+		IF wErr THEN
+			nErrID :=wErrid;
+			//nstep :=step;
+			step :=0;
+		END_IF
+		
+	END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="Modbus_TCP">
+      <LineId Id="209" Count="1" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="124" Count="1" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="126" Count="3" />
+      <LineId Id="217" Count="1" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="132" Count="6" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="139" Count="5" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="147" Count="12" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="312" Count="1" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="164" Count="1" />
+      <LineId Id="168" Count="1" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="265" Count="7" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="184" Count="6" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="191" Count="4" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="122" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="Drum" Id="{27b1932d-6b4b-4da7-b888-839de8a817cc}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	run1 :BOOL;
+	reversal1 :BOOL;
+	run2 :BOOL;
+	reversal2 :BOOL;
+	Drun_Stop :BOOL;
+	Drun_reversal :BOOL;
+	LDrun_Stop :BOOL;
+END_VAR ]]></Declaration>
+  </GVL>
+</TcPlcObject>

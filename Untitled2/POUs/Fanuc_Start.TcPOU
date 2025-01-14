@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Fanuc_Start" Id="{8041e2e4-66ea-4cd9-a127-a807a07f0ca1}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Fanuc_Start
+VAR_INPUT
+TEST	:BOOL;
+Enabled	:BOOL;
+SYS_RDY	:BOOL;
+PROG_Run	:BOOL;
+Pouse	:BOOL;
+Held	:BOOL;
+Fault	:BOOL;
+At_Perch	:BOOL;
+TP_Enable	:BOOL;
+Batt_Alarm	:BOOL;
+Busy	:BOOL;
+PNS_Ack	:BYTE;
+Collision_Alarm	:BOOL;
+Auto_on	:BOOL;
+CMD_PROD_Start	:BOOL;
+CMD_Restart	:BOOL;
+CMD_Stop	:BOOL;
+CMD_Hold	:BOOL;
+VIRTUAL_LIGHT_CURTAINS	:BOOL;
+CMD_Estop	:BOOL;
+CMD_JOB_Number	:BYTE;
+CMD_System_Reset	:BOOL;
+END_VAR
+VAR_OUTPUT
+IMSTP	:BOOL;
+Hold	:BOOL;
+SFSPD	:BOOL;
+CSTOPI	:BOOL;
+Restart	:BOOL;
+Start	:BOOL;
+Home	:BOOL;
+Enable	:BOOL;
+RSR_PNS	:BYTE;
+PNS_Strobe	:BOOL;
+PROD_Start	:BOOL;
+END_VAR
+VAR
+	Static_Aux_Ext_Pause	:BOOL;
+	Static_Aux_Normal_Start	:INT;
+	Static_Prod_Start	:BOOL;
+	Static_Home	:BOOL;
+	Static_Time :ARRAY [0..1] OF TON;
+	Static_Time2 :TOF;
+	Static_P_Trig :R_TRIG;
+	Temp_IF_Buffer	:BOOL;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Initial
+PROD_Start := Static_Prod_Start;
+Home := Static_Home;
+RSR_PNS := CMD_JOB_Number;
+//Robot_Enable
+IF NOT (Collision_Alarm) AND CMD_Estop THEN
+        IMSTP := TRUE;
+        SFSPD := TRUE;
+        Enable := TRUE;
+    ELSE
+        IMSTP := FALSE;
+        SFSPD := FALSE;
+        Enable := FALSE;
+END_IF;
+//Pro_Terminator
+IF CMD_Stop THEN
+        Static_Time[0](IN := TRUE,
+                            PT := T#3.3s);
+    END_IF;
+    IF NOT (CMD_Stop) AND Static_Time[0].Q THEN
+        Static_Time[0](IN := FALSE,
+                            PT := T#3.3s);
+        CSTOPI := FALSE;
+    END_IF;
+    IF Static_Time[0].IN THEN
+        IF Static_Time[0].ET >= T#0S AND Static_Time[0].ET <= T#0.5S THEN
+            CSTOPI := TRUE;
+        ELSIF Static_Time[0].ET > T#0.5S AND Static_Time[0].ET <= T#1S THEN
+            CSTOPI := FALSE;
+        ELSIF Static_Time[0].ET > T#1S AND Static_Time[0].ET <= T#1.5S THEN
+            CSTOPI := TRUE;
+        ELSIF Static_Time[0].ET > T#1.5S AND Static_Time[0].ET <= T#2S THEN
+            CSTOPI := FALSE;
+        ELSIF Static_Time[0].ET > T#2S AND Static_Time[0].ET <= T#2.5S THEN
+            CSTOPI := TRUE;
+        ELSIF Static_Time[0].ET > T#2.5S THEN
+            CSTOPI := FALSE;
+        END_IF;
+    END_IF;
+//Fault_Reset	
+	IF CMD_System_Reset THEN
+        Restart := TRUE;
+    ELSE
+        Restart := FALSE;
+    END_IF;
+//Ext_Hold
+	IF (PROG_Run AND (NOT (VIRTUAL_LIGHT_CURTAINS) OR CMD_Hold) OR (Static_Aux_Ext_Pause AND NOT (CMD_System_Reset))) THEN
+        Static_Aux_Ext_Pause := TRUE;
+        Hold := FALSE;
+    ELSE
+        Static_Aux_Ext_Pause := FALSE;
+        Hold := TRUE;
+    END_IF;
+//Restart
+	IF (Held OR Pouse) AND NOT (Fault) AND Auto_on AND NOT (TP_Enable) AND SYS_RDY AND NOT (PROG_Run)
+        AND PNS_Ack <> 0 AND PNS_Ack = CMD_JOB_Number AND Enabled AND NOT (Static_Aux_Ext_Pause) AND
+        (CMD_Restart OR CMD_PROD_Start) THEN
+        Start := TRUE;
+    ELSE
+        Start := FALSE;
+    END_IF;
+//Start_Initial
+	IF PROG_Run OR Fault OR TP_Enable OR Held OR Static_Time[1].Q THEN
+        Static_Aux_Normal_Start := 0;
+    END_IF;
+    
+    IF Static_Aux_Normal_Start = 3 THEN
+        Static_Time[1](IN := TRUE,
+                            PT := T#3s);
+    ELSE
+        Static_Time[1](IN := FALSE,
+                            PT := t#3s);
+    END_IF;
+//Before_Start
+	Static_P_Trig(CLK := CMD_PROD_Start);
+    Temp_IF_Buffer := Auto_on AND NOT (Fault) AND NOT (TP_Enable) AND NOT (Pouse) AND NOT (Held);
+    IF Temp_IF_Buffer AND NOT (PROG_Run) AND Static_Aux_Normal_Start = 0 AND Static_P_Trig.Q THEN
+        RSR_PNS := CMD_JOB_Number;
+        Static_Aux_Normal_Start := 1;
+    END_IF;
+    
+    IF Temp_IF_Buffer AND Enabled AND Static_Aux_Normal_Start = 1 THEN
+        Static_Time2(IN := TRUE,
+                            PT := T#1s);
+        //#Static_Time[3].TON(IN := TRUE,
+        //PT := T#500ms);
+    ELSE
+        Static_Time2(IN := FALSE,
+                            PT := T#1s);
+        //#Static_Time[3].TON(IN := FALSE,
+        //PT := T#500ms);
+    END_IF;
+    IF Static_Time2.Q THEN
+        PNS_Strobe := 1;
+    END_IF;
+    IF PROG_Run OR CMD_System_Reset OR Fault THEN
+        PNS_Strobe := 0;
+    END_IF;
+    //#PNS_Strobe := #Static_Time[2].Q;
+    IF Temp_IF_Buffer AND Enabled AND Static_Aux_Normal_Start = 1 AND PNS_Strobe THEN
+       
+        Static_Aux_Normal_Start := 2;
+    //ELSE
+        //#PNS_Strobe := FALSE;
+    END_IF;
+	IF Temp_IF_Buffer AND Enabled AND Static_Aux_Normal_Start = 2 THEN
+        Static_Aux_Normal_Start := 3;
+    END_IF;
+//Normal_Start
+	 IF (Auto_on AND CMD_JOB_Number <> 0 AND NOT (At_Perch) AND Enabled AND CMD_JOB_Number = 1 AND
+        NOT (PROG_Run) AND Static_Aux_Normal_Start = 3 )OR TEST   THEN
+        Static_Prod_Start := TRUE;
+    ELSE
+        Static_Prod_Start := FALSE;
+    END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="Fanuc_Start">
+      <LineId Id="98" Count="0" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="56" Count="8" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="66" Count="23" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="94" Count="3" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="102" Count="5" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="110" Count="5" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="118" Count="9" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="130" Count="29" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="163" Count="1" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="167" Count="4" />
+      <LineId Id="166" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
