@@ -806,7 +806,7 @@
 								<Entry Name="Standard Out Var 41" Index="#x7000" Sub="#x07">
 									<Type>BIT</Type>
 								</Entry>
-								<Entry Name="Standard Out Var 43" Index="#x7000" Sub="#x08" Flags="#x00008000">
+								<Entry Name="Standard Out Var 43" Index="#x7000" Sub="#x08">
 									<Type>BIT</Type>
 								</Entry>
 							</Pdo>
@@ -1489,8 +1489,10 @@
 		<MappingInfo Identifier="{03040030-0010-0304-3000-040310000403}" Id="#x02030010" Watchdog="04000000040000000400000004000000"/>
 		<OwnerA Name="TIID^Device 2 (EtherCAT)">
 			<OwnerB Name="TIID^Device 2 (EtherCAT)^Term 7 (EK1200)^Term 1 (EL1918)">
-				<Link VarA="Term 7 (EK1200)^Term 13 (EL2904)^Module 1 (FSOES)^RxPDO^FSOE" VarB="ConnectionInputs^Message_31 TxPDO"/>
 				<Link VarA="Term 7 (EK1200)^Term 13 (EL2904)^Module 1 (FSOES)^TxPDO^FSOE" VarB="ConnectionOutputs^Message_31 RxPDO"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 2 (EtherCAT)^Term 7 (EK1200)^Term 13 (EL2904)">
+				<Link VarA="Term 7 (EK1200)^Term 1 (EL1918)^ConnectionInputs^Message_31 TxPDO" VarB="Module 1 (FSOES)^RxPDO^FSOE"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 3 (EtherCAT Automation Protocol)^Box 2 (Publisher)">
 				<Link VarA="Term 7 (EK1200)^Term 1 (EL1918)^ConnectionInputs^Message_42 TxPDO" VarB="Pub-Var 1^Outputs^VarData"/>
@@ -1534,6 +1536,7 @@
 				<Link VarA="PlcTask Inputs^IO.DI_Drop3" VarB="Channel 9^Input"/>
 				<Link VarA="PlcTask Inputs^IO.DI_Drop4" VarB="Channel 10^Input"/>
 				<Link VarA="PlcTask Inputs^IO.DI_Drop5" VarB="Channel 11^Input"/>
+				<Link VarA="PlcTask Inputs^IO.DI_Drum1" VarB="Channel 4^Input"/>
 				<Link VarA="PlcTask Inputs^IO.DI_Reset_Button" VarB="Channel 13^Input"/>
 				<Link VarA="PlcTask Inputs^IO.DI_RobotFault" VarB="Channel 12^Input"/>
 			</OwnerB>
