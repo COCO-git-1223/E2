@@ -51,7 +51,6 @@ VAR
 	coco_text : BOOL;
 	coco_test1 :BOOL;
 	xuqing: BOOL;
-	xuqingniubi : BOOL;
 	
 END_VAR
 ]]></Declaration>
