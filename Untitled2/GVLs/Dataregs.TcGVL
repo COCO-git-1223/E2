@@ -7,6 +7,8 @@ VAR_GLOBAL
 	robot_OUT1 :ARRAY[1..4] OF WORD;
 	robot_IN2 :ARRAY[0..7] OF WORD;
 	robot_OUT2 :ARRAY[0..7] OF WORD;
+	xyz_1:INT;
+	xyz_2:INT;
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>
